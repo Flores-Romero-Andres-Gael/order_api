@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from products.models import Product
 
@@ -13,14 +14,36 @@ class Order(models.Model):
         (CANCELED, "Cancelada"),
     )
 
+    CHANGE_UPDATE = "update"
+    CHANGE_COMPLETED = "completed"
+    CHANGE_CANCELED = "canceled"
+    CHANGE_DELETE = "delete"
+    CHANGE_CREATED = "created"
+    CHANGE_STATUS = (
+        (CHANGE_UPDATE, "Update"),
+        (CHANGE_COMPLETED, "Completed"),
+        (CHANGE_CANCELED, "Canceled"),
+        (CHANGE_DELETE, "Delete"),
+        (CHANGE_CREATED, "Created"),
+    )
+
     id = models.AutoField(primary_key=True)
     customer_name = models.CharField(max_length=100)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
+    last_change_at = models.DateTimeField(default=timezone.now)
+    last_change_type = models.CharField(max_length=10, choices=CHANGE_STATUS, default=CHANGE_CREATED)
 
     def __str__(self):
         return f"Order # {self.id} - {self.customer_name}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["status"]),
+            models.Index(fields=["last_change_type"]),
+            models.Index(fields=["last_change_at"]),
+        ]
 
 class OrderItem(models.Model):
 

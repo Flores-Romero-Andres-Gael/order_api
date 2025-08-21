@@ -2,7 +2,6 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, extend_schema_field
 from rest_framework import serializers
 from django.db import transaction
-
 from inventory.models import InventoryMovement
 from products.models import Product
 from .models import Order, OrderItem
@@ -36,7 +35,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "customer_name", "total", "status", "created_at", "items", "items_data"]
+        fields = ["id", "customer_name", "total", "status", "created_at", "last_change_at", "last_change_type", "items", "items_data"]
+        read_only_fields = ["id, created_at", "last_change_at", "last_change_type", "items", "total"]
 
     def validate_items_data(self, value):
         if not value:
@@ -56,7 +56,6 @@ class OrderSerializer(serializers.ModelSerializer):
         for item in items_data:
             product = products[item["product"].id]
             qty = item["quantity"]
-
             if product.stock < qty:
                 raise serializers.ValidationError(
                     {"items_data": [f"Insufficient stock for product '{product.name}' (available {product.stock})."]}
@@ -80,3 +79,10 @@ class OrderSerializer(serializers.ModelSerializer):
         order.total = total
         order.save(update_fields=["total"])
         return order
+
+class OrderItemDecreaseSerializer(serializers.Serializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    quantity = serializers.IntegerField(min_value=1)
+
+class OrderItemDeleteSerializer(serializers.Serializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())

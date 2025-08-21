@@ -17,7 +17,7 @@ class InventoryMovement(models.Model):
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name= 'movements', null=True, blank=True)
     quantity = models.PositiveIntegerField(default=0)
-    movement_type = models.CharField(max_length=10, choices=MOVEMENT_TYPES, default='entrada')
+    movement_type = models.CharField(max_length=32, choices=MOVEMENT_TYPES, default='entrada')
     reason = models.CharField(max_length=10, choices=REASONS, default='ajuste')
     timestamp = models.DateTimeField(auto_now_add=True)
 

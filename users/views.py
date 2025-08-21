@@ -10,7 +10,6 @@ from drf_spectacular.utils import extend_schema, OpenApiExample
 
 User = get_user_model()
 
-
 # Create your views here.
 @extend_schema(
     description="Register a new user account.",
